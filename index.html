@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deadlockdle</title>
+<meta name="description" content="Daily Deadlock guessing game with ability, voice line, silhouette and emojis games.">
+
+<!-- Google Fonts: Orbitron -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/jpg" href="images/deadlockdleFavicon.jpg">
+
+<style>
+* {
+    font-family: 'Orbitron', Arial, sans-serif;
+}
+
+body { 
+    margin: 0; 
+    height: 100vh; 
+    overflow: hidden; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    color: rgb(228, 216, 58); 
+    text-align: center; 
+    position: relative; 
+    background-color: black; 
+    background-image: url('images/deadlockHaze.jpeg'); 
+    background-repeat: no-repeat; 
+    background-position: center center; 
+    background-size: cover; 
+}
+
+
+h1.title {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    color: rgb(228, 216, 58);
+    text-shadow:
+       -2px -2px 0 #000,
+        2px -2px 0 #000,
+       -2px  2px 0 #000,
+        2px  2px 0 #000,
+        0 0 8px #c4c143,
+        0 0 16px #c4c143;
+}
+
+/* Top left menu button */
+.menu-toggle {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 10000;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 2px solid rgb(228, 216, 58);
+    background-color: rgba(0,0,0,0.8);
+    color: rgb(228, 216, 58);
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.menu-toggle:hover {
+    transform: scale(1.05);
+}
+
+/* Dropdown menu */
+#dropdown-menu {
+    display: none;
+    position: fixed;
+    top: 50px;
+    left: 10px;
+    flex-direction: column;
+    background-color: rgba(0,0,0,0.8);
+    padding: 10px;
+    border-radius: 8px;
+    gap: 10px;
+    z-index: 10000;
+}
+
+#dropdown-menu a {
+    color: rgb(228, 216, 58);
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid rgb(228, 216, 58);
+    transition: background-color 0.3s;
+}
+
+#dropdown-menu a:hover {
+    background-color: rgba(0,0,0,0.6);
+}
+
+/* Sections */
+section {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+}
+
+/* Active section */
+section.active {
+    display: flex;
+}
+
+/* Main menu buttons */
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 300px;
+}
+
+.menu button {
+    width: 100%;
+    padding: 20px;
+    background-color: rgba(34,34,34,0.85);
+    border: 2px solid #c4c143;
+    border-radius: 12px;
+    color: rgb(228, 216, 58);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.menu button:hover {
+    background-color: rgba(51,51,51,0.9);
+    transform: scale(1.03);
+}
+
+.menu button span {
+    display: block;
+    font-size: 12px;
+    color: white;
+}
+
+/* Ability page styles */
+img.hero-img {
+    max-width: 240px;
+    width: 100%;
+    margin: 0;
+    display: block;
+    user-select: none;          /*prevent selecting the image as this allowed for the answer to be revealed when unintended */
+    -webkit-user-drag: none;    /* Chrome and Safari */
+    -moz-user-drag: none;       /* Firefox */
+    -o-user-drag: none;         /* Opera */
+    pointer-events: none;       /*prevents clicks and drags completely to add another safeguard to the unintended answer reveals */
+}
+
+.input-container {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+input {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #000;
+    width: 360px;
+    max-width: 90vw;    /* this is added to prevent overflow on small screens */
+    font-size: 16px;
+    outline: none;
+}
+
+
+input:focus {
+    border-color: #f72601;
+}
+
+button.guess-button {
+    margin-top: 6px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid #000;
+    background-color: red;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* Autocomplete dropdown styling */
+/*!! NEEDS HEROES GUESSED LIST TO BE ADDED !!*/
+.suggestions {
+    align-items: center;
+    top: 60px;
+    left: 0;
+    width: 360px;
+    background-color: rgba(0, 0, 0, 0.9);
+    border: 1px solid #c4c143;
+    border-radius: 6px;
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 20;
+}
+
+.suggestions div {
+    padding: 8px;
+    color: rgb(228, 216, 58);
+    cursor: pointer;
+}
+
+.suggestions div:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+/* Feedback text - right/wrong/invalid answer */
+#feedback {
+    margin-top: 10px;
+    font-size: 1.1rem;
+}
+
+#attempts-left {
+    margin-top: 8px;
+    font-size: 1rem;
+    color: rgba(228, 216, 58, 1);
+}
+
+.voice-box {
+    background-color: rgba(29, 28, 28, 1);
+    border: 1px solid rgba(228, 216, 58, 1);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+/* Silhouette Zoom */
+#silhouette-img {
+    transform-origin: var(--sil-x, 50%) var(--sil-y, 50%);
+    transform: scale(var(--sil-scale, 3));
+    transition: transform 0.6s ease-out;
+
+    pointer-events: none;   /* stops dragging selecting etc for the same reasons as the ability game - answer revealing unintentionally */
+    user-select: none;
+    -webkit-user-drag: none;    /* Chrome/Safari */
+    -moz-user-drag: none;       /* Firefox */
+    -o-user-drag: none;         /* Opera */
+}
+
+#silhouette-wrapper {
+    width: fit-content;
+    height: fit-content;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+#ability-wrapper {
+    position: relative;
+    width: 240px;
+    display: inline-block;
+    margin: 20px 0;
+}
+
+
+#tile-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;       
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+
+    pointer-events: auto;
+    z-index: 10;
+}
+
+
+
+
+.tile {
+    background-color: rgb(212, 201, 47);
+    border: 1px solid black;
+    transition: opacity 0.4s ease-out;
+
+    pointer-events: auto;  
+}
+
+
+
+/* adjustments for mobile */
+/* !! !! */
+@media (max-width: 480px) {
+    body {
+        height: auto;
+        overflow-y: auto;     /* allows scrolling */
+    }
+    #emojis-text {
+        font-size: 2.5rem;
+    }
+    img.hero-img {
+        max-width: 80vw;  /*scales with screen width  */
+    }
+    h1.title { 
+        font-size: 2rem; margin-bottom: 20px; 
+    }
+
+    input {
+        width: 70vw; 
+    }
+    button.guess-button {
+        font-size: 14px;
+        padding: 6px 10px;
+        width: 90vw;  /* guess button full width on small screens */
+    }
+    .menu button {
+        width: 90vw;  /* also main menu buttons full width */
+    }
+     #silhouette-wrapper {
+        max-width: 90vw; 
+    }
+    input {
+        padding: 14px 12px;
+        font-size: 18px;
+    }
+    .menu-toggle {
+        opacity: 0.6;
+    }
+
+}
+</style>
+</head>
+<body>
+
+<!-- Menu toggle -->
+<button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+<div id="dropdown-menu">
+    <a href="#" onclick="showSection('main')">Home</a>
+    <a href="#" onclick="showSection('ability')">Ability</a>
+    <a href="#" onclick="showSection('voice line')">Voice Line</a>
+    <a href="#" onclick="showSection('silhouette')">Silhouette</a>
+    <a href="#" onclick="showSection('emojis')">Emojis</a>
+</div>
+
+<!-- Main Menu Section -->
+<section id="main" class="active">
+    <h1 class="title">Deadlockdle</h1>
+    <div class="menu">
+        <button onclick="showSection('ability')">
+            Ability
+            <span>Guess using an ability icon</span>
+        </button>
+        <button onclick="showSection('voice line')">
+            Voice Line
+            <span>Guess using a voice line</span>
+        </button>
+        <button onclick="showSection('silhouette')">
+            Silhouette
+            <span>Guess that hero!</span>
+        </button>
+        <button onclick="showSection('emojis')">
+            Emojis
+            <span>Guess using emojis ✌️</span>
+        </button>
+    </div>
+</section>
+
+<!-- Sections -->
+<section id="ability">
+    <h1 class="title" style="font-size: 2rem;">Guess the hero with this ability</h1>
+    <p class="silhouette-subtext" style="color: white;">
+        Each wrong guess removes a tile
+    </p>
+    <div id="ability-wrapper" style="position: relative; display: inline-block; max-width: 240px;">
+    <img id="ability-img" src="" alt="Ability Image" class="hero-img" draggable="false">
+
+    <div id="tile-grid"></div>
+</div>
+    <div class="input-container">
+        <input id="guess-input" type="text" placeholder="Enter hero name">
+        <div id="suggestions" class="suggestions"></div>
+        <button class="guess-button" onclick="submitGuess()">Guess</button>
+    </div>
+    <p id="attempts-left"></p>
+    <p id="feedback"></p>
+</section>
+
+<section id="voice line">
+        <h1 class="title" style="font-size: 1.8rem; margin-bottom: 80px;">
+            Guess the hero that says this voice line
+        </h1>
+
+        <p id="voiceline-text" style="font-size: 1.9rem; font-style: italic; color: white; margin-top: 10px;
+        background-color: rgba(29, 28, 28, 1);
+        padding: 6px; 
+        border: 1px solid rgba(0, 0, 0, 1); 
+        border-radius: 8px;  margin-bottom: 80px;"></p>
+    <div class="input-container">
+        <input id="guess-input-vl" type="text" placeholder="Enter hero name">
+        <div id="suggestions-vl" class="suggestions"></div>
+        <button class="guess-button" onclick="submitVoiceLineGuess()">Guess</button>
+    </div>
+    <p id="attempts-left-vl"></p>
+    <p id="feedback-vl"></p>
+</section>
+
+<section id="silhouette">
+    <h1 class="title" style="font-size: 2rem; margin-bottom: 10px;">Guess that hero!</h1>
+    <p class="silhouette-subtext" style="color: white;">
+        Each wrong guess zooms the image out
+    </p>
+    <div id="silhouette-wrapper">
+    <img id="silhouette-img" src="" alt="Silhouette Image" class="hero-img">
+</div>
+    <div class="input-container">
+        <input id="guess-input-silhouette" type="text" placeholder="Enter hero name">
+        <div id="suggestions-silhouette" class="suggestions"></div>
+        <button class="guess-button" onclick="submitSilhouetteGuess()">Guess</button>
+    </div>
+    <p id="attempts-left-silhouette"></p>
+    <p id="feedback-silhouette"></p>
+</section>
+
+<section id="emojis">
+    <h1 class="title" style="font-size: 2rem; margin-bottom: 50px;">Guess the hero that fits these emojis</h1>
+    <p class="emojis-subtext" style="color: white;">
+        Each wrong guess reveals an emoji
+    </p>
+    <p id="emojis-text" style="font-size: 4rem; color: white; 
+        background-color: rgba(29, 28, 28, 1);
+        padding: 6px; 
+        border: 1px solid rgba(0, 0, 0, 1); 
+        border-radius: 8px;  margin-bottom: 80px;"></p>
+    <div class="input-container">
+        <input id="guess-input-emojis" type="text" placeholder="Enter hero name">
+        <div id="suggestions-emojis" class="suggestions"></div>
+        <button class="guess-button" onclick="submitEmojisGuess()">Guess</button>
+    </div>
+    <p id="attempts-left-emojis"></p>
+    <p id="feedback-emojis"></p>
+</section>
+
+<script>
+function toggleMenu() {
+    const menu = document.getElementById('dropdown-menu');
+    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function showSection(id) {
+    document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+
+    // auto minimize on mobile
+    if (window.innerWidth <= 480) {
+        document.getElementById('dropdown-menu').style.display = "none";
+    }
+}
+
+
+/* --- AUTOCOMPLETE --- */
+const heroes = [
+    "Abrams", "Bebop", "Billy", "Calico", "The Doorman", "Drifter", "Dynamo", 
+    "Grey Talon", "Haze", "Holliday", "Infernus", "Ivy", "Kelvin", "Lady Geist",
+    "Lash", "McGinnis", "Mina", "Mirage", "Mo & Krill", "Paige", "Paradox",
+    "Pocket", "Seven", "Shiv", "Sinclair", "Victor", "Vindicta", "Viscous",
+    "Vyper", "Warden", "Wraith", "Yamato"
+];
+
+function setupAutocomplete(inputId, suggestionId) {
+    const input = document.getElementById(inputId);
+    const suggestions = document.getElementById(suggestionId);
+
+    /* !! !! */
+    input.addEventListener("input", () => {
+        const query = input.value.toLowerCase();
+        suggestions.innerHTML = "";
+        if (!query) return;
+
+
+        /* !! fix !! */
+        /*
+        const firstLetter = query.charAt(0);
+        const filtered = heroes.filter(
+            hero => hero.toLowerCase().startsWith(firstLetter)
+        ).filter(hero => hero.toLowerCase().startsWith(query));*/
+
+        const filtered = heroes.filter(hero =>
+            hero.toLowerCase().split(/[\s&]+/).some(word => word.startsWith(query))
+        );
+
+
+        filtered.forEach(hero => {
+            const div = document.createElement("div");
+            div.textContent = hero;
+            div.addEventListener("click", () => {
+                input.value = hero;
+                suggestions.innerHTML = "";
+            });
+            suggestions.appendChild(div);
+        });
+    });
+
+    document.addEventListener("click", e => {
+        if (!e.target.closest(".input-container")) suggestions.innerHTML = "";
+    });
+}
+
+setupAutocomplete("guess-input", "suggestions");
+setupAutocomplete("guess-input-vl", "suggestions-vl")
+setupAutocomplete("guess-input-silhouette", "suggestions-silhouette");
+setupAutocomplete("guess-input-emojis", "suggestions-emojis");
+
+/* daily refresh - seed/shuffle */
+function seededShuffle(array, seed) {
+    const arr = [...array];
+    let m = arr.length, t, i;
+    function random() {
+        const x = Math.sin(seed++) * 10000;
+        return x - Math.floor(x);
+    }
+    while (m) {
+        i = Math.floor(random() * m--);
+        t = arr[m];
+        arr[m] = arr[i];
+        arr[i] = t;
+    }
+    return arr;
+}
+
+function getDayNumber() {
+    const today = new Date();
+    return today.getFullYear() * 1000 + today.getMonth() * 31 + today.getDate();
+}
+
+/* --- ABILITY GAME LOGIC --- */
+const abilities = [
+    { image: "images/abrams-Ability1.jpg", answer: "Abrams" },
+    { image: "images/bebop-Ability2.jpg", answer: "Bebop" },
+    { image: "images/billy-Ability3.jpg", answer: "Billy" },
+    { image: "images/calico-Ability2.jpg", answer: "Calico" },
+    { image: "images/drifter-Ability3.jpg", answer: "Drifter" },
+    { image: "images/dynamo-Ability4.jpg", answer: "Dynamo" },
+    { image: "images/greytalon-Ability1.jpg", answer: "Grey Talon" },
+    { image: "images/haze-Ability4.jpg", answer: "Haze" },
+    { image: "images/holliday-Ability3.jpg", answer: "Holliday" },
+    { image: "images/infernus-Ability1.jpg", answer: "Infernus" },
+    { image: "images/ivy-Ability2.jpg", answer: "Ivy" },
+    { image: "images/kelvin-Ability2.jpg", answer: "Kelvin" },
+    { image: "images/ladygeist-Ability1.jpg", answer: "Lady Geist" },
+    { image: "images/lash-Ability3.jpg", answer: "Lash" },
+    { image: "images/mcginnis-Ability2.jpg", answer: "McGinnis" },
+    { image: "images/mina-Ability4.jpg", answer: "Mina" },
+    { image: "images/mirage-Ability3.jpg", answer: "Mirage" },
+    { image: "images/mo&krill-Ability3.jpg", answer: "Mo & Krill" },
+    { image: "images/paige-Ability4.jpg", answer: "Paige" },
+    { image: "images/paradox-Ability3.jpg", answer: "Paradox" },
+    { image: "images/pocket-Ability1.jpg", answer: "Pocket" },
+    { image: "images/seven-Ability2.jpg", answer: "Seven" },
+    { image: "images/shiv-Ability2.jpg", answer: "Shiv" },
+    { image: "images/sinclair-Ability2.jpg", answer: "Sinclair" },
+    { image: "images/thedoorman-Ability2.jpg", answer: "The Doorman" },
+    { image: "images/victor-Ability4.jpg", answer: "Victor" },
+    { image: "images/vindicta-Ability1.jpg", answer: "Vindicta" },
+    { image: "images/viscous-Ability3.jpg", answer: "Viscous" },
+    { image: "images/vyper-Ability1.jpg", answer: "Vyper" },
+    { image: "images/warden-Ability2.jpg", answer: "Warden" },
+    { image: "images/wraith-Ability4.jpg", answer: "Wraith" },
+    { image: "images/yamato-Ability3.jpg", answer: "Yamato" },
+];
+function getDailyAbility() {
+    const dayNumber = getDayNumber();
+    const key = `dailyAbility-${dayNumber}`;
+    let data = localStorage.getItem(key);
+    if (data) return JSON.parse(data);
+
+    const shuffled = seededShuffle(abilities, dayNumber + 119);
+    const index = dayNumber % abilities.length;
+    const daily = { 
+        image: shuffled[index].image, 
+        answer: shuffled[index].answer, 
+        attempts: 8, 
+        solved: false 
+    };
+    localStorage.setItem(key, JSON.stringify(daily));
+    return daily;
+}
+
+const dailyAbility = getDailyAbility();
+const key = `dailyAbility-${getDayNumber()}`;
+let revealedTiles = new Set(dailyAbility.revealedTiles || []);
+
+const CORNERS = [0, 3, 12, 15];   // your 3x3 corners
+let lastWasCorner = dailyAbility.lastWasCorner ?? false;
+
+document.getElementById("ability-img").src = dailyAbility.image;
+const tileGrid = document.getElementById("tile-grid");
+
+// creating 16 tiles
+tileGrid.innerHTML = "";
+for (let i = 0; i < 16; i++) {
+    const tile = document.createElement("div");
+    tile.classList.add("tile");
+    tile.dataset.index = i;
+    tileGrid.appendChild(tile);
+}
+
+
+const tiles = Array.from(document.querySelectorAll(".tile"));
+const CENTERS = [5, 6, 9, 10];
+
+tiles.forEach(t => {
+    if (revealedTiles.has(t.dataset.index)) t.style.opacity = "0";
+});
+
+if (revealedTiles.size === 0) {
+
+    const nonCornerTiles = tiles.filter(t => {
+    const i = Number(t.dataset.index);
+    return !CORNERS.includes(i) && !CENTERS.includes(i);
+});
+
+
+    const firstTile = nonCornerTiles[Math.floor(Math.random() * nonCornerTiles.length)];
+    firstTile.style.opacity = "0";
+    revealedTiles.add(firstTile.dataset.index);
+
+    // track corner state
+    lastWasCorner = false;
+    dailyAbility.lastWasCorner = false;
+    dailyAbility.revealedTiles = Array.from(revealedTiles);
+    localStorage.setItem(key, JSON.stringify(dailyAbility));
+}
+
+
+/* if the game is already solved OR out of guesses, reveals all tiles */
+if (dailyAbility.solved || dailyAbility.attempts <= 0) {
+    tiles.forEach(t => t.style.opacity = "0");
+    tiles.forEach(t => revealedTiles.add(t.dataset.index));
+}
+
+document.getElementById("attempts-left").textContent = `Attempts left: ${dailyAbility.attempts}`;
+const abilityInput = document.getElementById("guess-input");
+const abilityFeedback = document.getElementById("feedback");
+
+if (dailyAbility.solved || dailyAbility.attempts <= 0) {
+    abilityFeedback.textContent = dailyAbility.solved
+        ? `✅ Correct! The hero is ${dailyAbility.answer}.`
+        : `❌ Out of guesses! The correct answer was ${dailyAbility.answer}.`;
+    abilityFeedback.style.color = dailyAbility.solved ? "lime" : "orange";
+    abilityInput.disabled = true;
+}
+
+
+function submitGuess() {
+    const input = document.getElementById("guess-input");
+    const feedback = document.getElementById("feedback");
+    const key = `dailyAbility-${getDayNumber()}`;
+    const guess = input.value.trim();
+     if (!guess || dailyAbility.solved || dailyAbility.attempts <= 0) return;
+
+    if (!heroes.map(h => h.toLowerCase()).includes(guess.toLowerCase())) {
+        feedback.textContent = "⚠️ Invalid hero name.";
+        feedback.style.color = "orange";
+        return;
+    }
+
+    if (guess.toLowerCase() === dailyAbility.answer.toLowerCase()) {
+        document.querySelectorAll(".tile").forEach(t => t.style.opacity = "0");
+        feedback.textContent = `✅ Correct! The hero is ${dailyAbility.answer}.`;
+        feedback.style.color = "lime";
+        input.disabled = true;
+        dailyAbility.solved = true;
+    } else {
+    dailyAbility.attempts = Math.max(0, dailyAbility.attempts - 1);
+    if (dailyAbility.attempts > 0) {
+        feedback.textContent = `❌ Wrong guess. Try again!`;
+        feedback.style.color = "red";
+        document.getElementById("attempts-left").textContent = `Attempts left: ${dailyAbility.attempts}`;
+
+        // removes one random tile after wrong guess
+        const tiles = Array.from(document.querySelectorAll(".tile"));
+
+const remainingTiles = tiles.filter(t => !revealedTiles.has(t.dataset.index));
+
+if (remainingTiles.length > 0) {
+
+    let candidates;
+
+    if (lastWasCorner) {
+        //  if the previous reveal WAS a corner
+        candidates = remainingTiles.filter(t => 
+            !CORNERS.includes(Number(t.dataset.index))
+        );
+
+        if (candidates.length === 0) {
+            candidates = remainingTiles;
+        }
+    } else {
+        
+        candidates = remainingTiles;
+    }
+
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    chosen.style.opacity = "0";
+    revealedTiles.add(chosen.dataset.index);
+
+    /* update corner tracking */
+    const isCorner = CORNERS.includes(Number(chosen.dataset.index));
+    lastWasCorner = isCorner;
+
+    /* Saves this so it persists on refresh */
+    dailyAbility.lastWasCorner = lastWasCorner;
+    dailyAbility.revealedTiles = Array.from(revealedTiles);
+    localStorage.setItem(key, JSON.stringify(dailyAbility));
+}
+
+
+    } else {
+            document.querySelectorAll(".tile").forEach(t => t.style.opacity = "0");
+            feedback.textContent = `❌ Out of guesses! The correct answer was ${dailyAbility.answer}.`;
+            feedback.style.color = "orange";
+            document.getElementById("attempts-left").textContent = `Attempts left: 0`;
+            input.disabled = true;
+
+            dailyAbility.revealedTiles = Array.from(revealedTiles);
+            localStorage.setItem(key, JSON.stringify(dailyAbility));
+        }
+    }
+
+    localStorage.setItem(key, JSON.stringify(dailyAbility));
+    input.value = "";
+}
+
+
+/* --- VOICE LINE GAME LOGIC --- */
+const voicelines = [
+    { line: `"Don't worry, I'm on the case."`, answer: "Abrams" },
+    { line: `If they don't get out of the way, that's on them."`, answer: "Abrams" },
+    { line: `"1, 5, 10, I don't care how many there are, I'll stand up to them all."`, answer: "Abrams" },
+    { line: `"My creator needs my help, and I won't let her down."`, answer: "Bebop" },
+    { line: `"I'll do whatever it takes to save Miss Shelly."`, answer: "Bebop" },
+    { line: `"What are we standing around for? Let's start breaking shit!"`, answer: "Billy" },
+    { line: `"Ava, take a look at all the lovely people we're about to murder."`, answer: "Calico" },
+    { line: `"I think you'll find the service at the Baroness to be exemplary."`, answer: "The Doorman" },
+    { line: `"I never had much use for a name. Names are for people who want to be remembered. Me? \n My existence is like gravity or time. A concept that you fear but you cannot escape. I simply am."`, answer: "Drifter" },
+    { line: `"Let me collect my extremities and I'll be right there."`, answer: "Dynamo" },
+    { line: `"Today my grandkids will be paid in blood."`, answer: "Grey Talon" },
+    { line: `"The shadows embrace me."`, answer: "Haze" },
+    { line: `"I let my town down once, but I'm gonna make it right today."`, answer: "Holliday" },
+    { line: `"Next round's on me. Well, it's on Hank, technically. But you get the idea."`, answer: "Infernus" },
+    { line: `"I'll do anything to keep the people of Spanish Harlem safe."`, answer: "Ivy" },
+    { line: `"When the waves come, I'll be ready."`, answer: "Kelvin" },
+    { line: `"Don't mind the big guy. He's friendly. Unless, of course, you try to stop us, in which case he will definitely maul you."`, answer: "Mo & Krill" },
+    { line: `"I didn't sell my soul, I saved my life."`, answer: "Lady Geist" },
+    { line: `"I hope you all are ready to watch the god of combat do his thing."`, answer: "Lash" },
+    { line: `"The Magnificent Henry is ready to help. Ha! Somethin' funny? Yeah, you calling yourself magnificent is hilarious."`, answer: "Sinclair" },
+    { line: `"Papa Fairfax is givin' me a raise after this!"`, answer: "McGinnis" },
+    { line: `"If I die, I can't go to Fashion Week, and I'm not risking that.."`, answer: "Mina" },
+    { line: `"You will be humbled before the Djinn."`, answer: "Mirage" },
+    { line: `"Guys, you can't kill me! I got plat armor!"`, answer: "Paige" },
+    { line: `"Time travel isn't a thing... yet."`, answer: "Paradox" },
+    { line: `"Forget figuring out my purpose in life, I just want to know who my left arm belongs to."`, answer: "Victor" },
+    { line: `"I should be able to find some fun spots to shoot from."`, answer: "Vindicta" },
+    { line: `"I knew a guy who owed the 7th moon a C-note. Yamato murdered the shit out of him."`, answer: "Vyper" },
+    { line: `"The Deep has proven its dominance."`, answer: "Viscous" },
+    { line: `"I'll hold the line until my fellows return."`, answer: "Warden" },
+    { line: `"Can't help, I need to go over my ledger. People always underestimate how important the organized part of organized crime is."`, answer: "Wraith" },
+    { line: `"Brother, please watch over me. Your dream will soon become a reality."`, answer: "Yamato" },
+    { line: `"My father's gift for my 18th birthday was a bullet to the chest. Today is my chance to say thank you."`, answer: "Pocket" },
+    { line: `"R u n b e f o r m e m e"`, answer: "Seven" },
+    { line: `"Feels good to be king."`, answer: "Shiv" },
+
+];
+
+function getDailyVoiceLine() {
+    const dayNumber = getDayNumber();
+    const key = `dailyVoiceLine-${dayNumber}`;
+    let data = localStorage.getItem(key);
+    if (data) return JSON.parse(data);
+
+    const shuffled = seededShuffle(voicelines, dayNumber + 222);
+    const index = dayNumber % voicelines.length;
+    const daily = { line: shuffled[index].line, answer: shuffled[index].answer, attempts: 5, solved: false };
+    localStorage.setItem(key, JSON.stringify(daily));
+    return daily;
+}
+
+const dailyVoiceLine = getDailyVoiceLine();
+document.getElementById("voiceline-text").textContent = dailyVoiceLine.line;
+document.getElementById("attempts-left-vl").textContent = `Attempts left: ${dailyVoiceLine.attempts}`;
+if (dailyVoiceLine.solved || dailyVoiceLine.attempts <= 0) {
+    const input = document.getElementById("guess-input-vl");
+    const feedback = document.getElementById("feedback-vl");
+    input.disabled = true;
+    feedback.textContent = dailyVoiceLine.solved
+        ? `✅ Correct! The hero is ${dailyVoiceLine.answer}.`
+        : `❌ Out of guesses! The correct answer was ${dailyVoiceLine.answer}.`;
+    feedback.style.color = dailyVoiceLine.solved ? "lime" : "orange";
+}
+
+function submitVoiceLineGuess() {
+    const input = document.getElementById("guess-input-vl");
+    const feedback = document.getElementById("feedback-vl");
+    const key = `dailyVoiceLine-${getDayNumber()}`;
+    const guess = input.value.trim();
+    if (!guess || dailyVoiceLine.solved || dailyVoiceLine.attempts <= 0) return;
+
+    if (!heroes.map(h => h.toLowerCase()).includes(guess.toLowerCase())) {
+        feedback.textContent = "⚠️ Invalid hero name.";
+        feedback.style.color = "orange";
+        return;
+    }
+
+    if (guess.toLowerCase() === dailyVoiceLine.answer.toLowerCase()) {
+        feedback.textContent = `✅ Correct! The hero is ${dailyVoiceLine.answer}.`;
+        feedback.style.color = "lime";
+        input.disabled = true;
+        dailyVoiceLine.solved = true;
+    } else {
+        dailyVoiceLine.attempts = Math.max(0, dailyVoiceLine.attempts - 1);
+        if (dailyVoiceLine.attempts > 0) {
+            feedback.textContent = `❌ Wrong guess. Try again!`;
+            feedback.style.color = "red";
+            document.getElementById("attempts-left-vl").textContent = `Attempts left: ${dailyVoiceLine.attempts}`;
+        } else {
+            feedback.textContent = `❌ Out of guesses! The correct answer was ${dailyVoiceLine.answer}.`;
+            feedback.style.color = "orange";
+            document.getElementById("attempts-left-vl").textContent = `Attempts left: 0`;
+            input.disabled = true;
+        }
+    }
+
+    localStorage.setItem(key, JSON.stringify(dailyVoiceLine));
+    input.value = "";
+}
+
+/* --- Silhouette GAME LOGIC --- */
+
+const silhouettes = [
+    { image: "images/abrams-Silhouette.jpg", answer: "Abrams", answerImage: "images/abrams-Silhouette-answer.jpg" },
+    { image: "images/bebop-Silhouette.jpg", answer: "Bebop", answerImage: "images/bebop-Silhouette-answer.jpg" },
+    { image: "images/billy-Silhouette.jpg", answer: "Billy", answerImage: "images/billy-Silhouette-answer.jpg" },
+    { image: "images/calico-Silhouette.jpg", answer: "Calico", answerImage: "images/calico-Silhouette-answer.jpg" },
+    { image: "images/thedoorman-Silhouette.jpg", answer: "The Doorman", answerImage: "images/thedoorman-Silhouette-answer.jpg" },
+    { image: "images/drifter-Silhouette.jpg", answer: "Drifter", answerImage: "images/drifter-Silhouette-answer.jpg" },
+    { image: "images/dynamo-Silhouette.jpg", answer: "Dynamo", answerImage: "images/dynamo-Silhouette-answer.jpg" },
+    { image: "images/greytalon-Silhouette.jpg", answer: "Grey Talon", answerImage: "images/greytalon-Silhouette-answer.jpg" },
+    { image: "images/haze-Silhouette.jpg", answer: "Haze", answerImage: "images/haze-Silhouette-answer.jpg" },
+    { image: "images/holliday-Silhouette.jpg", answer: "Holliday", answerImage: "images/holliday-Silhouette-answer.jpg" },
+    { image: "images/infernus-Silhouette.jpg", answer: "Infernus", answerImage: "images/infernus-Silhouette-answer.jpg" },
+    { image: "images/ivy-Silhouette.jpg", answer: "Ivy", answerImage: "images/ivy-Silhouette-answer.jpg" },
+    { image: "images/kelvin-Silhouette.jpg", answer: "Kelvin", answerImage: "images/kelvin-Silhouette-answer.jpg" },
+    { image: "images/ladygeist-Silhouette.jpg", answer: "Lady Geist", answerImage: "images/ladygeist-Silhouette-answer.jpg" },
+    { image: "images/lash-Silhouette.jpg", answer: "Lash", answerImage: "images/lash-Silhouette-answer.jpg" },
+    { image: "images/mcginnis-Silhouette.jpg", answer: "McGinnis", answerImage: "images/mcginnis-Silhouette-answer.jpg" },
+    { image: "images/mina-Silhouette.jpg", answer: "Mina", answerImage: "images/mina-Silhouette-answer.jpg" },
+    { image: "images/mirage-Silhouette.jpg", answer: "Mirage", answerImage: "images/mirage-Silhouette-answer.jpg" },
+    { image: "images/mo&krill-Silhouette.jpg", answer: "Mo & Krill", answerImage: "images/mo&krill-Silhouette-answer.jpg" },
+    { image: "images/paige-Silhouette.jpg", answer: "Paige", answerImage: "images/paige-Silhouette-answer.jpg" },
+    { image: "images/paradox-Silhouette.jpg", answer: "Paradox", answerImage: "images/Paradox-Silhouette-answer.jpg" },
+    { image: "images/pocket-Silhouette.jpg", answer: "Pocket", answerImage: "images/pocket-Silhouette-answer.jpg" },
+    { image: "images/seven-Silhouette.jpg", answer: "Seven", answerImage: "images/seven-Silhouette-answer.jpg" },
+    { image: "images/shiv-Silhouette.jpg", answer: "Shiv", answerImage: "images/shiv-Silhouette-answer.jpg" },
+    { image: "images/sinclair-Silhouette.jpg", answer: "Sinclair", answerImage: "images/sinclair-Silhouette-answer.jpg" },
+    { image: "images/victor-Silhouette.jpg", answer: "Victor", answerImage: "images/victor-Silhouette-answer.jpg" },
+    { image: "images/vindicta-Silhouette.jpg", answer: "Vindicta", answerImage: "images/vindicta-Silhouette-answer.jpg" },
+    { image: "images/viscous-Silhouette.jpg", answer: "Viscous", answerImage: "images/viscous-Silhouette-answer.jpg" },
+    { image: "images/vyper-Silhouette.jpg", answer: "Vyper", answerImage: "images/vyper-Silhouette-answer.jpg" },
+    { image: "images/warden-Silhouette.jpg", answer: "Warden", answerImage: "images/warden-Silhouette-answer.jpg" },
+    { image: "images/wraith-Silhouette.jpg", answer: "Wraith", answerImage: "images/wraith-Silhouette-answer.jpg" },
+    { image: "images/yamato-Silhouette.jpg", answer: "Yamato", answerImage: "images/yamato-Silhouette-answer.jpg" },
+];
+function getDailySilhouette() {
+    const dayNumber = getDayNumber();
+    const key = `dailySilhouette-${dayNumber}`;
+    let data = localStorage.getItem(key);
+    if (data) return JSON.parse(data);
+
+    const shuffled = seededShuffle(silhouettes, dayNumber + 345);
+    const index = dayNumber % silhouettes.length;
+
+    const silX = Math.random() * 60 + 20;
+    const silY = Math.random() * 60 + 20;
+
+    const daily = {
+    image: shuffled[index].image,
+    answer: shuffled[index].answer,
+    answerImage: shuffled[index].answerImage,
+    attempts: 5,
+    scale: 6,          // starting zoom
+    step: 1,         // zoom out per wrong guess
+    x: silX,
+    y: silY,
+    solved: false
+};
+
+
+    localStorage.setItem(key, JSON.stringify(daily));
+    return daily;
+}
+
+const dailySilhouette = getDailySilhouette();
+const silImg = document.getElementById("silhouette-img");
+silImg.src = dailySilhouette.image;
+silImg.style.setProperty("--sil-scale", dailySilhouette.scale);
+silImg.style.setProperty("--sil-x", dailySilhouette.x + "%");
+silImg.style.setProperty("--sil-y", dailySilhouette.y + "%");
+document.getElementById("attempts-left-silhouette").textContent = `Attempts left: ${dailySilhouette.attempts}`;
+
+const silInput = document.getElementById("guess-input-silhouette");
+const silFeedback = document.getElementById("feedback-silhouette");
+
+if (dailySilhouette.solved || dailySilhouette.attempts <= 0) {
+    // show correct image at full scale
+    silImg.src = dailySilhouette.answerImage;
+    silImg.style.setProperty("--sil-scale", 1);
+
+    // Feedback
+    silFeedback.textContent = dailySilhouette.solved
+        ? `✅ Correct! The hero is ${dailySilhouette.answer}.`
+        : `❌ Out of guesses! The correct answer was ${dailySilhouette.answer}.`;
+    silFeedback.style.color = dailySilhouette.solved ? "lime" : "orange";
+
+    // Disable input permanently
+    silInput.disabled = true;
+} else {
+    silImg.style.setProperty("--sil-scale", dailySilhouette.scale);
+}
+
+
+function submitSilhouetteGuess() {
+    const input = document.getElementById("guess-input-silhouette");
+    const feedback = document.getElementById("feedback-silhouette");
+    const key = `dailySilhouette-${getDayNumber()}`;
+    const guess = input.value.trim();
+    if (!guess || dailySilhouette.solved || dailySilhouette.attempts <= 0) return;
+
+    if (!heroes.map(h => h.toLowerCase()).includes(guess.toLowerCase())) {
+        feedback.textContent = "⚠️ Invalid hero name.";
+        feedback.style.color = "orange";
+        return;
+    }
+
+    if (guess.toLowerCase() === dailySilhouette.answer.toLowerCase()) {
+        feedback.textContent = `✅ Correct! The hero is ${dailySilhouette.answer}.`;
+        feedback.style.color = "lime";
+        input.disabled = true;
+        dailySilhouette.solved = true;
+        silImg.src = dailySilhouette.answerImage;
+        silImg.style.setProperty("--sil-scale", 1);
+    } else {
+        dailySilhouette.attempts = Math.max(0, dailySilhouette.attempts - 1);
+        if (dailySilhouette.attempts > 0) {
+            dailySilhouette.scale = Math.max(1, dailySilhouette.scale - dailySilhouette.step);
+            silImg.style.setProperty("--sil-scale", dailySilhouette.scale);
+            feedback.textContent = `❌ Wrong guess. Try again!`;
+            feedback.style.color = "red";
+            document.getElementById("attempts-left-silhouette").textContent = `Attempts left: ${dailySilhouette.attempts}`;
+        } else {
+            feedback.textContent = `❌ Out of guesses! The correct answer was ${dailySilhouette.answer}.`;
+            feedback.style.color = "orange";
+            document.getElementById("attempts-left-silhouette").textContent = `Attempts left: 0`;
+            input.disabled = true;
+            silImg.src = dailySilhouette.answerImage;
+            silImg.style.setProperty("--sil-scale", 1);
+        }
+    }
+
+    localStorage.setItem(key, JSON.stringify(dailySilhouette));
+    input.value = "";
+}
+
+
+/* EMOJIS GAME LOGIC */
+const emojis = [
+    { line: "🚬😎💪📖😈", answer: "Abrams" },
+    { line: "🎷💣🦾🤖🪝", answer: "Bebop" },
+    { line: "‼️🍾⛓️🤘🐐", answer: "Billy" },
+    { line: "👓👁️🌑💣🐈", answer: "Calico" },
+    { line: "🕴️🏃‍♂️🛎️🗝️🚪", answer: "The Doorman" },
+    { line: "🏜️🧭👤🩸🧛", answer: "Drifter" },
+    { line: "🌀💥🧲🤖🏥", answer: "Dynamo" },
+    { line: "👁️🥾🦅🎯🩶", answer: "Grey Talon" },
+    { line: "☣️💃🗡️💨😴", answer: "Haze" },
+    { line: "🪶🪙♠️🌵🧨", answer: "Holliday" },
+    { line: "⏱️💥🏃‍♂️♨️🌋", answer: "Infernus" },
+    { line: "♾️🛸💀🐀🏹", answer: "Ivy" },
+    { line: "🚷🐢🧪❄️⛸️", answer: "Kelvin" },
+    { line: "🕷️🚰👻💚💅", answer: "Lady Geist" },
+    { line: "🏋️‍♂️⚓🪢💪👊", answer: "Lash" },
+    { line: "🎀💪🧪🔧🧱", answer: "McGinnis" },
+    { line: "💋🆎👠🦇☂️", answer: "Mina" },
+    { line: "👁️🧍🪰⏳🌪️", answer: "Mirage" },
+    { line: "🔗🐒🚴🦔🕳️", answer: "Mo & Krill" },
+    { line: "✨🛡️🤓🐎🐉", answer: "Paige" },
+    { line: "🟦🌹⏱️♾️⏳", answer: "Paradox" },
+    { line: "🌠🧥🫟🐸💼", answer: "Pocket" },
+    { line: "⛓️‍💥🌩️⚡⚡⚡", answer: "Seven" },
+    { line: "😡🎤💔👑🗡️", answer: "Shiv" },
+    { line: "👤👩🐇🎩🪄", answer: "Sinclair" },
+    { line: "😢💥❤️‍🔥🔋🧟", answer: "Victor" },
+    { line: "💙☠️🔭🐦‍⬛🎯", answer: "Vindicta" },
+    { line: "✊🫟🧊💦👽", answer: "Viscous" },
+    { line: "🪨💉🩸🏹🐍", answer: "Vyper" },
+    { line: "🛡️⚗️⛓️🪝🚨", answer: "Warden" },
+    { line: "👒🔫♠️🧠🎴", answer: "Wraith" },
+    { line: "➡️🌑🗡️🖤🤺", answer: "Yamato" },
+
+];
+
+function getDailyEmojis() {
+    const dayNumber = getDayNumber();
+    const key = `dailyEmojis-${dayNumber}`;
+
+    let data = localStorage.getItem(key);
+    if (data) return JSON.parse(data);
+
+    const shuffled = seededShuffle(emojis, dayNumber + 466);
+    const index = dayNumber % emojis.length;
+
+    const daily = {
+        line: shuffled[index].line,
+        answer: shuffled[index].answer,
+        attempts: 5,
+        revealedCount: 1,
+        solved: false
+    };
+
+    localStorage.setItem(key, JSON.stringify(daily));
+    return daily;
+}
+
+
+const dailyEmojis = getDailyEmojis();
+
+// split emojis into array
+const emojiArray = Array.from(
+  new Intl.Segmenter("en", { granularity: "grapheme" })
+    .segment(dailyEmojis.line),
+  s => s.segment
+);
+
+// Restore saved 
+let revealedCount = dailyEmojis.revealedCount;
+let attemptsEmojis = dailyEmojis.attempts;
+
+
+// show revealed emojis so far as well
+document.getElementById("emojis-text").textContent =
+  `${emojiArray.slice(0, revealedCount).join("")}`;
+
+document.getElementById("attempts-left-emojis").textContent = `Attempts left: ${attemptsEmojis}`;
+
+if (dailyEmojis.solved) {
+    document.getElementById("guess-input-emojis").disabled = true;
+    document.getElementById("feedback-emojis").textContent =
+        `✅ Correct! The hero is ${dailyEmojis.answer}.`;
+    document.getElementById("feedback-emojis").style.color = "lime";
+} 
+else if (attemptsEmojis <= 0) {
+    document.getElementById("guess-input-emojis").disabled = true;
+    document.getElementById("feedback-emojis").textContent =
+        `❌ Out of guesses! The correct answer was ${dailyEmojis.answer}.`;
+    document.getElementById("feedback-emojis").style.color = "orange";
+}
+
+
+
+function submitEmojisGuess() {
+
+    if (attemptsEmojis <= 0) return;
+
+    const input = document.getElementById("guess-input-emojis");
+    const feedback = document.getElementById("feedback-emojis");
+    const guess = input.value.trim();
+
+    if (!guess) return;
+
+    //validates the guess
+    if (!heroes.map(h => h.toLowerCase()).includes(guess.toLowerCase())) {
+        feedback.textContent = "⚠️ Invalid hero name.";
+        feedback.style.color = "orange";
+        return;
+    }
+
+    const answer = dailyEmojis.answer;
+    
+
+    /* --- CORRECT GUESS --- */
+    if (guess.toLowerCase() === answer.toLowerCase()) {
+        /*reveal ALL emojis on correct guess*/
+        revealedCount = emojiArray.length;
+        document.getElementById("emojis-text").textContent = `${emojiArray.join("")}`;
+
+        feedback.textContent = `✅ Correct! The hero is ${dailyEmojis.answer}.`;
+        feedback.style.color = "lime";
+        input.disabled = true;
+
+        dailyEmojis.solved = true;
+        dailyEmojis.attempts = attemptsEmojis;
+        dailyEmojis.revealedCount = revealedCount;
+        localStorage.setItem(`dailyEmojis-${getDayNumber()}`, JSON.stringify(dailyEmojis));
+        return;
+    }
+
+    /* --- WRONG GUESS --- */
+    attemptsEmojis--;
+
+    if (attemptsEmojis > 0) {
+        // Reveal the next emoji
+        if (revealedCount < emojiArray.length) {
+            revealedCount++;
+            document.getElementById("emojis-text").textContent =
+                `${emojiArray.slice(0, revealedCount).join("")}`;
+        }
+        feedback.textContent = `❌ Wrong guess. Try again!`;
+        feedback.style.color = "red";
+        document.getElementById("attempts-left-emojis").textContent = `Attempts left: ${attemptsEmojis}`;
+    } else {
+        //reveal all emojis
+        document.getElementById("emojis-text").textContent = `${emojiArray.join("")}`;
+
+        feedback.textContent = `❌ Out of guesses! The correct answer was ${dailyEmojis.answer}.`;
+        feedback.style.color = "orange";
+        document.getElementById("attempts-left-emojis").textContent = `Attempts left: ${attemptsEmojis}`;
+        input.disabled = true;
+    }
+
+    dailyEmojis.attempts = attemptsEmojis;
+    dailyEmojis.revealedCount = revealedCount;
+    localStorage.setItem(`dailyEmojis-${getDayNumber()}`, JSON.stringify(dailyEmojis));
+
+    input.value = "";
+}
+
+
+/* --- ENTER KEY LISTENERS --- */
+// Ability
+document.getElementById("guess-input").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        submitGuess();
+    }
+});
+
+// Voice Line
+document.getElementById("guess-input-vl").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        submitVoiceLineGuess();
+    }
+});
+
+// Silhouette
+document.getElementById("guess-input-silhouette").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        submitSilhouetteGuess();
+    }
+});
+
+
+//Emojis
+document.getElementById("guess-input-emojis").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        submitEmojisGuess();
+    }
+});
+</script>
+
+
+</body>
+</html>
